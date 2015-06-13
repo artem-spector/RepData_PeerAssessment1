@@ -8,23 +8,27 @@ output:
 
 ## Loading and preprocessing the data
 
-Unzip and read the activity data, convert the "date" field to POSIX date type.
+* unzip and read the activity data
+* convert the "date" field to POSIX date type
+* keep the data subset without missing values in **stepsReported** variable
+
 ```{r}
 data <- read.csv(unz("activity.zip", 'activity.csv'))
 data$date <- as.POSIXct(data$date)
-str(data)
+stepsReported <- data[!is.na(data$steps),]
 ```
 
 ## What is mean total number of steps taken per day?
 
-* filter out the rows with missing values
 * calculate the total number of steps per day
 * plot a histogram of steps per day 
 
 ```{r}
-stepsReported <- data[!is.na(data$steps),]
 stepsByDate <- aggregate(stepsReported$steps, list(date = stepsReported$date), sum)
-hist(stepsByDate$x, xlab = "steps", main = "Total number of steps taken each day")
+hist(stepsByDate$x, 
+     col = "blue",
+     main = "Total number of steps taken each day",
+     xlab = "steps")
 ```
 
 * calculate mean of total steps per day
@@ -40,10 +44,63 @@ median(stepsByDate$x)
 
 ## What is the average daily activity pattern?
 
+* calculate average number of steps per 5-min interval over all days
+* plot average number of steps per interval 
+
+``` {r}
+avgStepsByInterval <- aggregate(stepsReported$steps, list(interval = stepsReported$interval), FUN = mean)
+plot(avgStepsByInterval$interval, avgStepsByInterval$x, 
+     type = "l", col='blue', 
+     main = "Average daily activity pattern", 
+     xlab = "5 minute interval", 
+     ylab = "number of steps")
+```
+
+* find the interval containing the max number of steps
+``` {r}
+which.max(avgStepsByInterval$x)
+```
 
 
 ## Imputing missing values
 
+* calculate total number of missing values
+
+``` {r}
+sum(is.na(data$steps))
+```
+
+* create a new dataset 
+* fill missing values by using average for the same 5 minute interval
+
+``` {r}
+newData <- data
+for (i in  which(is.na(newData$steps))) {
+    interval <- newData$interval[i]
+    newData$steps[i] <- avgStepsByInterval[avgStepsByInterval$interval == interval,]$x
+}
+```
+
+* calculate the total number of steps per day after imputting missing data 
+* plot a histogram of steps per day 
+
+```{r}
+newStepsByDate <- aggregate(newData$steps, list(date = newData$date), sum)
+hist(newStepsByDate$x, 
+     col = "blue",
+     main = "Total number of steps taken each day (after filling missing values)",
+     xlab = "steps")
+```
+
+* calculate mean of total steps per day
+```{r}
+mean(newStepsByDate$x)
+```
+
+* calculate median of total steps per day
+```{r}
+median(newStepsByDate$x)
+```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
