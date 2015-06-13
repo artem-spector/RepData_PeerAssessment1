@@ -8,10 +8,34 @@ output:
 
 ## Loading and preprocessing the data
 
-
+Unzip and read the activity data, convert the "date" field to POSIX date type.
+```{r}
+data <- read.csv(unz("activity.zip", 'activity.csv'))
+data$date <- as.POSIXct(data$date)
+str(data)
+```
 
 ## What is mean total number of steps taken per day?
 
+* filter out the rows with missing values
+* calculate the total number of steps per day
+* plot a histogram of steps per day 
+
+```{r}
+stepsReported <- data[!is.na(data$steps),]
+stepsByDate <- aggregate(stepsReported$steps, list(date = stepsReported$date), sum)
+hist(stepsByDate$x, xlab = "steps", main = "Total number of steps taken each day")
+```
+
+* calculate mean of total steps per day
+```{r}
+mean(stepsByDate$x)
+```
+
+* calculate median of total steps per day
+```{r}
+median(stepsByDate$x)
+```
 
 
 ## What is the average daily activity pattern?
