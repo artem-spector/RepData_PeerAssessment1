@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
@@ -12,7 +7,8 @@ output:
 * convert the "date" field to POSIX date type
 * keep the data subset without missing values in **stepsReported** variable
 
-```{r}
+
+```r
 data <- read.csv(unz("activity.zip", 'activity.csv'))
 data$date <- as.POSIXct(data$date)
 stepsReported <- data[!is.na(data$steps),]
@@ -23,7 +19,8 @@ stepsReported <- data[!is.na(data$steps),]
 * calculate the total number of steps per day
 * plot a histogram of steps per day 
 
-```{r}
+
+```r
 stepsByDate <- aggregate(stepsReported$steps, list(date = stepsReported$date), sum)
 hist(stepsByDate$x, 
      col = "blue",
@@ -31,14 +28,26 @@ hist(stepsByDate$x,
      xlab = "steps")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
+
 * calculate mean of total steps per day
-```{r}
+
+```r
 mean(stepsByDate$x)
 ```
 
+```
+## [1] 10766.19
+```
+
 * calculate median of total steps per day
-```{r}
+
+```r
 median(stepsByDate$x)
+```
+
+```
+## [1] 10765
 ```
 
 
@@ -47,7 +56,8 @@ median(stepsByDate$x)
 * calculate average number of steps per 5-min interval over all days
 * plot average number of steps per interval 
 
-``` {r}
+
+```r
 avgStepsByInterval <- aggregate(stepsReported$steps, list(interval = stepsReported$interval), FUN = mean)
 plot(avgStepsByInterval$interval, avgStepsByInterval$x, 
      type = "l", col='blue', 
@@ -56,10 +66,17 @@ plot(avgStepsByInterval$interval, avgStepsByInterval$x,
      ylab = "number of steps")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+
 * find the interval containing the max number of steps
-``` {r}
+
+```r
 idx <- which.max(avgStepsByInterval$x)
 avgStepsByInterval$interval[idx]
+```
+
+```
+## [1] 835
 ```
 
 
@@ -67,15 +84,21 @@ avgStepsByInterval$interval[idx]
 
 * calculate total number of missing values
 
-``` {r}
+
+```r
 missing <- which(is.na(data$steps))
 length(missing)
+```
+
+```
+## [1] 2304
 ```
 
 * create a new dataset 
 * fill missing values by using average for the same 5 minute interval
 
-``` {r}
+
+```r
 filledData <- data
 for (i in  missing) {
     interval <- filledData$interval[i]
@@ -86,7 +109,8 @@ for (i in  missing) {
 * calculate the total number of steps per day after imputting missing data 
 * plot a histogram of steps per day 
 
-```{r}
+
+```r
 newStepsByDate <- aggregate(filledData$steps, list(date = filledData$date), sum)
 hist(newStepsByDate$x, 
      col = "blue",
@@ -94,14 +118,26 @@ hist(newStepsByDate$x,
      xlab = "steps")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png) 
+
 * calculate mean of total steps per day
-```{r}
+
+```r
 mean(newStepsByDate$x)
 ```
 
+```
+## [1] 10766.19
+```
+
 * calculate median of total steps per day
-```{r}
+
+```r
 median(newStepsByDate$x)
+```
+
+```
+## [1] 10766.19
 ```
 
 **Conclusion: ** Imputing missing values does not change the estimates of the total daily number of steps
@@ -111,19 +147,21 @@ median(newStepsByDate$x)
 * add a new factor variable to the filled dataset with the week day of the date
 * change the factor variable so that it has only two levels - "weekday" and "weekend"
 
-``` {r}
+
+```r
 filledData$weekday <- factor(weekdays(filledData$date), 
                              levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
 levels(filledData$weekday) <- c(rep("weekday", 5), rep("weekend", 2))
-
-
 ```
 
 * calculate average number of steps per interval over all the weekdays and weekends
 * plot the result of calculation as a panel graph
 
-``` {r}
+
+```r
 library('lattice')
 avgStepsPerWeekday <- aggregate(filledData$steps, list(interval = filledData$interval, weekday = filledData$weekday), FUN = mean)
 xyplot(x~interval|weekday, avgStepsPerWeekday, type="l", ylab = "number of steps", layout = c(1,2))
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-13-1.png) 
